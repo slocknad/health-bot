@@ -41,12 +41,27 @@ async def help(ctx, *arg):
 
 def checkdb(t):
     mycursor = healthbot.cursor()
-    mycursor.execute("SELECT name FROM Trigger")
+    mycursor.execute("SELECT name FROM history")
     myresult = mycursor.fetchall()
     for x in myresult:
         if x == t:
             return t
     return False
+
+def writedb(name, content):
+    mycursor = healthbot.cursor()
+    sql = "INSERT INTO history (name, content, embed) VALUES (%s, %s, 1)"
+    #the 1 at the end is just temporary, I have no idea what Joao means by embed. -- Ryan
+    val = (name,content)
+
+    mycursor.execute(sql, val)
+    healthbot.commit()
+
+    print(mycursor.rowcount, "record inserted.")
+    return True
+
+
+
 
 '''
 MOD COMMANDS
@@ -222,12 +237,20 @@ async def on_message(message):
     if message.author == bot.user:
         return
     
+    '''
     if message.content.startswith("!"): #recognising a command
         #trigger = checkdb(message.content[4:])
         #if trigger:
         #    return trigger
         await bot.process_commands(message)
         return
+    '''
+
+    if message.content.startswith("!"): #recognising a command
+        writedb(str(message.author), str(message.content))
+        await bot.process_commands(message)
+        return
+    
 
     if message.content.lower() in ["musik make love to <@774402228084670515>","musik make love to health bot","musik make love to health :: bot"]:
         time.sleep(1)
